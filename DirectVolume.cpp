@@ -137,13 +137,13 @@ void DirectVolume::handleDiskAdded(const char *devpath, NetlinkEvent *evt) {
 
     char msg[255];
 
-    int partmask = 0;
-    int i;
-    for (i = 1; i <= mDiskNumParts; i++) {
-        partmask |= (1 << i);
-    }
-    mPendingPartMap = partmask;
-
+//    int partmask = 0;
+//    int i;
+//    for (i = 1; i <= mDiskNumParts; i++) {
+//        partmask |= (1 << i);
+//    }
+//    mPendingPartMap = partmask;
+    mPendingPartMap = mDiskNumParts;
     if (mDiskNumParts == 0) {
 #ifdef PARTITION_DEBUG
         SLOGD("Dv::diskIns - No partitions - good to go son!");
@@ -151,7 +151,8 @@ void DirectVolume::handleDiskAdded(const char *devpath, NetlinkEvent *evt) {
         setState(Volume::State_Idle);
     } else {
 #ifdef PARTITION_DEBUG
-        SLOGD("Dv::diskIns - waiting for %d partitions (mask 0x%x)",
+        //SLOGD("Dv::diskIns - waiting for %d partitions (mask 0x%x)",
+        SLOGD("Dv::diskIns - waiting for %d partitions (mask %d)",
              mDiskNumParts, mPendingPartMap);
 #endif
         setState(Volume::State_Pending);
@@ -190,8 +191,8 @@ void DirectVolume::handlePartitionAdded(const char *devpath, NetlinkEvent *evt) 
     SLOGD("Dv:partAdd: part_num = %d, minor = %d\n", part_num, minor);
 #endif
     mPartMinors[part_num -1] = minor;
-
-    mPendingPartMap &= ~(1 << part_num);
+    mPendingPartMap-=1;
+//    mPendingPartMap &= ~(1 << part_num);
     if (!mPendingPartMap) {
 #ifdef PARTITION_DEBUG
         SLOGD("Dv:partAdd: Got all partitions - ready to rock!");
@@ -201,7 +202,8 @@ void DirectVolume::handlePartitionAdded(const char *devpath, NetlinkEvent *evt) 
         }
     } else {
 #ifdef PARTITION_DEBUG
-        SLOGD("Dv:partAdd: pending mask now = 0x%x", mPendingPartMap);
+        //SLOGD("Dv:partAdd: pending mask now = 0x%x", mPendingPartMap);
+        SLOGD("Dv:partAdd: pending mask now = %d", mPendingPartMap);
 #endif
     }
 }
@@ -223,12 +225,13 @@ void DirectVolume::handleDiskChanged(const char *devpath, NetlinkEvent *evt) {
         mDiskNumParts = 1;
     }
 
-    int partmask = 0;
-    int i;
-    for (i = 1; i <= mDiskNumParts; i++) {
-        partmask |= (1 << i);
-    }
-    mPendingPartMap = partmask;
+//    int partmask = 0;
+//    int i;
+//    for (i = 1; i <= mDiskNumParts; i++) {
+//        partmask |= (1 << i);
+//    }
+//    mPendingPartMap = partmask;
+    mPendingPartMap = mDiskNumParts;
 
     if (getState() != Volume::State_Formatting) {
         if (mDiskNumParts == 0) {
